@@ -60,13 +60,13 @@ ibot:
   head_nlayers: 3
   head_hidden_dim: 2048
 train:
-  batch_size_per_gpu: 256 # 256 for vit_s, 32 for vit_g
-  dataset_path: CustomImageDataset:split=TRAIN:root=/lustre/groups/labs/marr/qscd01/datasets/NCT-CRC-HE-100K:extra=/home/aih/benedikt.roth/scripts/bild_pfade.csv #to change to your own dataset
-  output_dir: . # change to something reasonable
+  batch_size_per_gpu: 32 # 256 for vit_s, 32 for vit_g
+  dataset_path: CustomImageDataset:split=TRAIN:root=/home/na236/DataBase#2/train/all #to change to your own dataset
+  output_dir: /home/na236 # change to something reasonable
   saveckp_freq: 20
   seed: 0
   num_workers: 10  
-  OFFICIAL_EPOCH_LENGTH: 100 # change depending on your dataset
+  OFFICIAL_EPOCH_LENGTH: 1 # change depending on your dataset
   cache_dataset: true
   centering: "sinkhorn_knopp" # or "sinkhorn_knopp" or "centering"
 student:
@@ -81,7 +81,7 @@ student:
   qkv_bias: true
   proj_bias: true
   ffn_bias: true
-  num_register_tokens: 0y
+  num_register_tokens: 0
   interpolate_antialias: false
   interpolate_offset: 0.1
 teacher:
@@ -91,7 +91,7 @@ teacher:
   teacher_temp: 0.07
   warmup_teacher_temp_epochs: 30 # original was 30
 optim:
-  epochs: 100 #200 for bs 256
+  epochs: 500 #200 for bs 256
   weight_decay: 0.04 # 0.04 original
   weight_decay_end: 0.2
   base_lr: 2.0e-04  # learning rate for a batch size of 1024 is 2.0e-04

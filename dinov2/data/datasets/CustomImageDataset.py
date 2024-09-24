@@ -47,12 +47,10 @@ class CustomImageDataset(Dataset):
             self,
             split,
             root: str,
-            extra: str,
             transform=None,
             target_transform=None,
             test_size=0.2,
             random_state=42):
-        self.img_labels = pd.read_csv(extra)
         self.img_dir = root
         self.transform = transform
         self.target_transform = target_transform
@@ -63,12 +61,13 @@ class CustomImageDataset(Dataset):
         #    self.img_labels, test_size=test_size, random_state=random_state)
 
     def __len__(self):
-        return len(self.img_labels) 
-        #return len(self.train_data) 
+        #return len(self.img_labels) 
+        return len([f for f in os.listdir(self.img_dir) if os.path.isfile(os.path.join(self.img_dir, f))])
 
     def __getitem__(self, idx):
         try:
-            img_path = self.img_labels.iloc[idx, 0]
+            img_path = [f for f in os.listdir(self.img_dir) if os.path.isfile(os.path.join(self.img_dir, f))][idx]
+            img_path = os.path.join(self.img_dir, img_path)
             with open(img_path, mode="rb") as f:
                 image_pil = f.read()
             image_pil = ImageDataDecoder(image_pil).decode()
@@ -89,5 +88,4 @@ class CustomImageDataset(Dataset):
         if self.transform:
             image_pil = self.transform(image_pil)
         return image_pil
-    
     

@@ -13,26 +13,6 @@ Performance over time of finetuning a ViT-s with DINOv2: a) on NCT-CRC and evalu
 CRC testset on patch-level classification and b) on TCGA and testing on TCGA (5-fold cross-validation) and CPTAC (external
 testset) on WSI-level classification.
 
-## Data
-
-For the finetuning process, we utilized histopathological data from two primary datasets:
-- **TCGA (The Cancer Genome Atlas):** Specifically, colorectal cancer (CRC) data from the cohorts COAD and READ were used. This dataset includes annotations of microsatellite instability (MSI).
-  - TCGA Dataset: [The Cancer Genome Atlas Pan-Cancer analysis project](https://doi.org/10.1038/ng.2764)
-
-- **NCT-CRC-100K:** This dataset consists of 100,000 histological images of human colorectal cancer and healthy tissue.
-  - NCT-CRC-100K Dataset: [100,000 histological images of human colorectal cancer and healthy tissue](https://doi.org/10.5281/zenodo.1214456)
-
-For testing purposes, we incorporated two additional external datasets:
-- **CPTAC (Clinical Proteomic Tumor Analysis Consortium):** For more details, visit the [CPTAC Data Portal](https://cptac-data-portal.georgetown.edu/). (Accessed: 10.11.2023)
-  - CPTAC Dataset: [CPTAC Data Portal](https://cptac-data-portal.georgetown.edu/)
-
-- **CRC-VAL-HE-7K:** This dataset, similar to NCT-CRC-100K, was employed for testing purposes.
-  - CRC-VAL-HE-7K Dataset: [7180 histological images of human colorectal cancer and healthy tissue](https://doi.org/10.5281/zenodo.1214456)
-
-We used the following testing pipeline for TCGA and CPTAC:
-- **Testing Pipeline:** [HistoBistro](https://github.com/peng-lab/HistoBistro)
-
-
 
 # Model farm
 We make all models as well as heads used for training publicly available in the following.
@@ -103,40 +83,83 @@ We make all models as well as heads used for training publicly available in the 
   </tbody>
 </table>
 
-### Load pretrained model 
+## DINO Backbone Loading Function for downstream tasks
 
+The `get_dino_backbone` function is used to load the teacher and student DINO backbone models, adjust positional embeddings, and load pretrained weights into them.
+Use the checkpoint.pth files given out from the training as dictonary.
+
+### Function: `get_dino_backbone`
 
 ```python
 import torch
 import torch.nn as nn
 
-DINO_PATH_FINETUNED_DOWNLOADED=''
+def get_dino_backbone(dict_path, device):
+    """
+    Load the DINO backbone models (teacher and student), correct the state dictionary,
+    and adjust the positional embeddings for loading the pretrained weights.
 
-def get_dino_finetuned_downloaded():
-    # load the original DINOv2 model with the correct architecture and parameters. The positional embedding is too large.
-    # load vits or vitg
-    model=torch.hub.load('facebookresearch/dinov2', 'dinov2_vits14')
-    #model=torch.hub.load('facebookresearch/dinov2', 'dinov2_vitg14')
-    # load finetuned weights
-    pretrained = torch.load(DINO_PATH_FINETUNED_DOWNLOADED, map_location=torch.device('cpu'))
-    # make correct state dict for loading
-    new_state_dict = {}
-    for key, value in pretrained['teacher'].items():
+    Args:
+        dict_path (str): Path to the dictionary containing the pretrained weights.
+        device (str): Device on which to map the model ('cpu' or 'cuda').
+
+    Returns:
+        model_teacher (torch.nn.Module): The teacher model loaded with corrected weights.
+        model_student (torch.nn.Module): The student model loaded with corrected weights.
+    """
+
+    embed_dim = 384  # Embedding dimension for the positional embedding
+    
+    # Load the pre-trained DINO models for both teacher and student
+    model_student = torch.hub.load('facebookresearch/dinov2', 'dinov2_vits14')
+    model_teacher = torch.hub.load('facebookresearch/dinov2', 'dinov2_vits14')
+    
+    # Load the pretrained weights from the provided checkpoint
+    pretrained = torch.load(dict_path, map_location=torch.device(device))['model']
+
+    # Extract only the keys related to the teacher model by filtering 'teacher.' prefix
+    teacher_state_dict = {k.replace('teacher.', ''): v for k, v in pretrained.items() if k.startswith('teacher.')}
+    
+    # Debugging: print the keys to verify correct extraction of teacher weights
+    print("Keys in teacher state dict:")
+    for key in teacher_state_dict.keys():
+        print(key)
+    
+    # Prepare teacher's state dict for loading by removing 'backbone.' prefix
+    teacher_state_dict_corrected = {}
+    for key, value in teacher_state_dict.items():
         if 'dino_head' in key:
-            print('not used')
+            print('dino_head not used')  # Skipping the classification head
         else:
-            new_key = key.replace('backbone.', '')
-            new_state_dict[new_key] = value
-    #change shape of pos_embed, shape depending on vits or vitg
-    pos_embed = nn.Parameter(torch.zeros(1, 257, 384))
-    #pos_embed = nn.Parameter(torch.zeros(1, 257, 1536))
-    model.pos_embed = pos_embed
-    # load state dict
-    model.load_state_dict(new_state_dict, strict=True)
-    return model
+            new_key = key.replace('backbone.', '')  # Remove 'backbone.' from keys
+            teacher_state_dict_corrected[new_key] = value
 
-model=get_dino_finetuned_downloaded()
+    # Extract and prepare the student state dictionary in a similar way
+    student_state_dict = {k.replace('student.', ''): v for k, v in pretrained.items() if k.startswith('student.')}
+    student_state_dict_corrected = {}
+    for key, value in student_state_dict.items():
+        if 'dino_head' in key:
+            print('dino_head not used')  # Skipping the classification head
+        else:
+            new_key = key.replace('backbone.', '')  # Remove 'backbone.' from keys
+            student_state_dict_corrected[new_key] = value
+
+    # Create new positional embeddings with the correct size (1, 257, embed_dim)
+    pos_embed1 = nn.Parameter(torch.zeros(1, 257, embed_dim))
+    pos_embed2 = nn.Parameter(torch.zeros(1, 257, embed_dim))
+    
+    # Replace the positional embeddings in the models
+    model_student.pos_embed = pos_embed1
+    model_teacher.pos_embed = pos_embed2
+
+    # Load the corrected state dictionaries into the models (strict=True to enforce matching keys)
+    model_student.load_state_dict(student_state_dict_corrected, strict=True)
+    model_teacher.load_state_dict(teacher_state_dict_corrected, strict=True)
+
+    # Return both models; typically the teacher model is used as the backbone
+    return model_teacher, model_student
 ```
+
 ## Installation
 
 This requires the same prerequisites as the original DINOv2 implementation.
@@ -158,22 +181,12 @@ pip install -r requirements.txt
 
 ## Use the pipeline
 
-Currently, the github repository is meant to run on one GPU only. It can simply be run by this line of code once all the hyperparameters are set in the dinov2/dinov2/configs/ssl_default_config.yaml:
+Currently, the github repository is meant to run on one GPU only. It can simply be run by this line of code once all the hyperparameters are set in the ssl_default_config.yaml.
+The path to the folder containing all image patches for the training is given in line 64:
 
 ```python
-python dinov2/train/train.py --config-file dinov2/configs/ssl_default_config.yaml
+python dinov2/train/train.py --config-file ssl_default_config.yaml
 ```
-
-If you want to use more than one GPU, it is important to change the sampler in train.py to a sampler supporting sharding (e.g. SamplerType.SHARDED_INFINITE) and to change the StateDictType in fsdp/&#95;&#95;init&#95;&#95;.py. Then the starting is done via
-
-```python
-torchrun --nproc_per_node=2 dinov2/dinov2/train/train.py --config-file dinov2/configs/ssl_default_config.yaml
-```
-nproc_per_node corresponds to the number of GPUs.
-
-Of course arguments can be passed with the function as well (see also the original DINOv2).
-
-To run it, you will have to change the paths to your own dataset in the dinov2/configs/ssl_default_config.yaml. The csv files should just contain the paths for the image files.
 
 ## Continue finetuning
 
@@ -243,3 +256,4 @@ If you find our research helpful, please consider citing:
 }
 ```
 # tools_dinov2
+

@@ -116,7 +116,7 @@ class FSDPCheckpointer(Checkpointer):
         self.tag_last_checkpoint(basename)
 
     def load(self, *args, **kwargs):
-        with FSDP.state_dict_type(self.model, StateDictType.LOCAL_STATE_DICT):
+        with FSDP.state_dict_type(self.model, StateDictType.FULL_STATE_DICT):
             return super().load(*args, **kwargs)
 
     def has_checkpoint(self) -> bool:

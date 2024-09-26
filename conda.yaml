@@ -6,14 +6,14 @@ channels:
   - xformers
   - conda-forge
 dependencies:
-  - python=3.9
-  - pytorch=2.0.0
-  - pytorch-cuda=11.7
-  - torchvision=0.15.0
+  - python=3.10
+  - pytorch=1.13.1
+  - pytorch-cuda=11.7.0
+  - torchvision
   - omegaconf=2.3.0
-  - torchmetrics=0.10.3
-  - fvcore=0.1.5.post20221221
-  - iopath=0.1.10
+  - torchmetrics
+  - fvcore
+  - iopath
   - xformers=0.0.18
   - pip
   - pip:

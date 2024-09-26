@@ -1,24 +1,27 @@
-# sklearn was added
+
 name: dinov2
 channels:
-  - defaults
-  - pytorch
-  - nvidia
-  - xformers
-  - conda-forge
+- defaults
+- pytorch
+- nvidia
+- xformers
+- conda-forge
 dependencies:
-  - python=3.9
-  - pytorch::pytorch=2.0.0
-  - pytorch::pytorch-cuda=11.7.0
-  - pytorch::torchvision=0.15.0
-  - omegaconf
-  - torchmetrics=0.10.3
-  - fvcore
-  - iopath
-  - xformers::xformers=0.0.18
-  - pip
-  - pip:
-    - git+https://github.com/facebookincubator/submitit
-    - --extra-index-url https://pypi.nvidia.com
-    - cuml-cu11
-    - scikit-learn
+- python=3.9
+- pytorch::pytorch=2.0.0+cu117
+- pytorch::pytorch-cuda=11.7.0
+- pytorch::torchvision=0.15.0+cu117
+- omegaconf=2.3.0
+- torchmetrics=0.10.3
+- fvcore=0.1.5.post20221221
+- iopath=0.1.10
+- xformers::xformers=0.0.18
+- pip
+- pip:
+  - git+https://github.com/facebookincubator/submitit
+  - --extra-index-url https://pypi.nvidia.com
+  - cuml-cu11==24.4.0
+  - scikit-learn==1.4.1.post1
+
+
+

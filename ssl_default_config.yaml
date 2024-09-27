@@ -61,8 +61,8 @@ ibot:
   head_hidden_dim: 2048
 train:
   batch_size_per_gpu: 32 # 256 for vit_s, 32 for vit_g
-  dataset_path: CustomImageDataset:split=TRAIN:root=/home/na236/DataBase#2/train/all #to change to your own dataset
-  output_dir: /home/na236 # change to something reasonable
+  dataset_path: CustomImageDataset:split=TRAIN:root=/home/cw9/sds_hd/sd21c015/DataBase_PDAC/Tiles #to change to your own dataset
+  output_dir: /home/cw9/sds_hd/sd21c015/DataBase_PDAC/Tiles # change to something reasonable
   saveckp_freq: 20
   seed: 0
   num_workers: 10  

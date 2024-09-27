@@ -173,12 +173,6 @@ conda env create -f conda.yaml
 conda activate dinov2
 ```
 
-pip - Clone the repository and then use the provided requirements.txt to install the dependencies:
-
-```python
-pip install -r requirements.txt
-```
-
 ## Use the pipeline
 
 Currently, the github repository is meant to run on one GPU only. It can simply be run by this line of code once all the hyperparameters are set in the ssl_default_config.yaml.

@@ -43,6 +43,10 @@ def get_cfg_from_args(args):
     default_cfg = OmegaConf.create(dinov2_default_config)
     cfg = OmegaConf.load(args.config_file)
     cfg = OmegaConf.merge(default_cfg, cfg, OmegaConf.from_cli(args.opts))
+    print(args.input_dir)
+    if args.input_dir:
+        cfg['train']['dataset_path'] = f'CustomImageDataset:split=TRAIN:root={args.input_dir}'
+
     return cfg
 
 

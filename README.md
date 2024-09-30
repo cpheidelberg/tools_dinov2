@@ -180,7 +180,7 @@ Currently, the github repository is meant to run on one GPU only. It can simply 
 The path to the folder containing all image patches for the training is given in line 64:
 
 ```python
-python dinov2/train/train.py --config-file ssl_default_config.yaml
+python dinov2/train/train.py --config-file ssl_default_config.yaml --input-dir "PathtoInputdir" --output-dir "PathtoOutputdir"
 ```
 
 ## Continue finetuning

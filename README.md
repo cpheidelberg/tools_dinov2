@@ -173,7 +173,7 @@ conda env create -f conda.yaml
 conda activate dinov2
 ```
 You can also just run the .sh file for cloning the repository and creating the conda enviroment:
-[Install Script](run_dinov2.sh)
+[Install Script](run_dinov2)
 ## Use the pipeline
 
 Currently, the github repository is meant to run on one GPU only. It can simply be run by this line of code once all the hyperparameters are set in the ssl_default_config.yaml.

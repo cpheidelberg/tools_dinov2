@@ -23,7 +23,6 @@ import wandb
 
 from fvcore.common.checkpoint import PeriodicCheckpointer
 import torch
-
 from dinov2.data import SamplerType, make_data_loader, make_dataset
 from dinov2.data import collate_data_and_cast, DataAugmentationDINO, MaskingGenerator
 import dinov2.distributed as distributed
@@ -31,7 +30,6 @@ from dinov2.fsdp import FSDPCheckpointer
 from dinov2.logging import MetricLogger
 from dinov2.utils.config import setup
 from dinov2.utils.utils import CosineScheduler
-
 from dinov2.train.ssl_meta_arch import SSLMetaArch
 
 
@@ -42,6 +40,7 @@ logger = logging.getLogger("dinov2")
 def get_args_parser(add_help: bool = True):
     parser = argparse.ArgumentParser("DINOv2 training", add_help=add_help)
     parser.add_argument("--config-file", default="/home/aih/benedikt.roth/dinov2/dinov2/configs/ssl_default_config.yaml", metavar="FILE", help="path to config file")
+    parser.add_argument("--input-path", default="", metavar="PATH", help="path to config file")
     parser.add_argument(
         "--no-resume",
         action="store_true",
@@ -52,16 +51,15 @@ def get_args_parser(add_help: bool = True):
     parser.add_argument(
         "opts",
         help="""
-Modify config options at the end of the command. For Yacs configs, use
-space-separated "PATH.KEY VALUE" pairs.
-For python-based LazyConfig, use "path.key=value".
+        Modify config options at the end of the command. For Yacs configs, use
+        space-separated "PATH.KEY VALUE" pairs.
+        For python-based LazyConfig, use "path.key=value".
         """.strip(),
         default=None,
         nargs=argparse.REMAINDER,
     )
     parser.add_argument(
         "--output-dir",
-        "--output_dir",
         default="",
         type=str,
         help="Output directory to save logs and checkpoints",

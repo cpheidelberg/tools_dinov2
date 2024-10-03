@@ -31,6 +31,7 @@ from dinov2.logging import MetricLogger
 from dinov2.utils.config import setup
 from dinov2.utils.utils import CosineScheduler
 from dinov2.train.ssl_meta_arch import SSLMetaArch
+from tqdm import tqdm
 
 
 torch.backends.cuda.matmul.allow_tf32 = True  # PyTorch 1.12 sets this to False by default
@@ -250,13 +251,13 @@ def do_train(cfg, model, resume=False): # change resume to true?
     metric_logger = MetricLogger(delimiter="  ", output_file=metrics_file)
     header = "Training"
 
-    for data in metric_logger.log_every(
+    for data in tqdm(metric_logger.log_every(
         data_loader,
         10,
         header,
         max_iter,
         start_iter,
-    ):
+    ), desc = "training", total = max_iter):
         current_batch_size = data["collated_global_crops"].shape[0] / 2
         if iteration > max_iter:
             return

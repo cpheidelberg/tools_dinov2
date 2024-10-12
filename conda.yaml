@@ -13,6 +13,7 @@ dependencies:
   - omegaconf=2.3.0
   - torchmetrics
   - fvcore
+  - h5py
   - pyvips
   - iopath
   - xformers=0.0.18

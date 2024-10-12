@@ -328,6 +328,12 @@ def do_train(cfg, model, resume=False): # change resume to true?
 
         iteration = iteration + 1
     metric_logger.synchronize_between_processes()
+
+    # model saving
+    teacher_dino_ckp_path = os.path.join("trained_models", "teacher_after_training.pth")
+    torch.save({"teacher": model.teacher.state_dict()}, teacher_dino_ckp_path)
+    print(f"final teacher model saved")
+
     return {k: meter.global_avg for k, meter in metric_logger.meters.items()}
 
 

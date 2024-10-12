@@ -172,20 +172,15 @@ conda (Recommended) - Clone the repository and then create and activate a dinov2
 conda env create -f conda.yaml
 conda activate dinov2
 ```
-
-pip - Clone the repository and then use the provided requirements.txt to install the dependencies:
-
-```python
-pip install -r requirements.txt
-```
-
+You can also just run the .sh file for cloning the repository and creating the conda enviroment:
+[Install Script](run_dinov2)
 ## Use the pipeline
 
 Currently, the github repository is meant to run on one GPU only. It can simply be run by this line of code once all the hyperparameters are set in the ssl_default_config.yaml.
 The path to the folder containing all image patches for the training is given in line 64:
 
 ```python
-python dinov2/train/train.py --config-file ssl_default_config.yaml
+python dinov2/train/train.py --config-file ssl_default_config.yaml --input-dir "PathtoInputdir" --output-dir "PathtoOutputdir"
 ```
 
 ## Continue finetuning

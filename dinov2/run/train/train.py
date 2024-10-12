@@ -48,6 +48,8 @@ def main():
     args_parser = get_args_parser(description=description, parents=parents)
     args = args_parser.parse_args()
 
+    
+
     setup_logging()
 
     assert os.path.exists(args.config_file), "Configuration file does not exist!"

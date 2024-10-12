@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# Variables
+REPO_URL="https://github.com/cpheidelberg/tools_dinov2"  # Repository URL
+REPO_DIR="tools_dinov2"  # Repository directory name
+ENV_NAME="dinov2"  # Name of the conda environment
+REQUIREMENTS_FILE="conda.yaml"  # Path to the conda requirements file
+CONFIG_FILE="ssl_default_config.yaml"  # Path to the configuration file
+INPUT_DIR="/home/na236/DataBase#2/train/all"   # Path to input dir with patches
+OUTPUT_DIR="/home/na236/checkpoints"   # Path to output dir for checkpoints/logs
+
+# Function to initialize conda if not already initialized
+initialize_conda() {
+    # Check if conda has been initialized
+    if ! command -v conda &> /dev/null; then
+        echo "Conda not found. Please ensure Anaconda or Miniconda is installed."
+        exit 1
+    fi
+
+    # Initialize conda for the current shell session
+    echo "Initializing conda..."
+    eval "$(/home/na236/anaconda3/bin/conda shell.bash hook)"
+}
+
+
+# Clone the repository if it doesn't exist
+if [ -d "$REPO_DIR" ]; then
+    echo "Repository '$REPO_DIR' already exists. Skipping cloning."
+else
+    echo "Cloning repository from '$REPO_URL'..."
+    git clone "$REPO_URL"
+fi
+
+# Navigate to the repository directory
+cd "$REPO_DIR" || { echo "Directory '$REPO_DIR' not found."; exit 1; }
+
+# Initialize conda
+initialize_conda
+
+# Check if the conda environment exists
+if conda info --envs | grep -q "$ENV_NAME"; then
+    echo "Conda environment '$ENV_NAME' already exists. Skipping environment creation."
+else
+    echo "Creating conda environment '$ENV_NAME' from '$REQUIREMENTS_FILE'..."
+    conda env create -f "$REQUIREMENTS_FILE"
+fi
+
+
+
+conda activate "$ENV_NAME"
+
+# Execute the Python training script
+echo "Running the training script with configuration file '$CONFIG_FILE'..."
+python dinov2/train/train.py --config-file "$CONFIG_FILE" --input-dir "$INPUT_DIR" --output-dir "$OUTPUT_DIR"
+
+conda deactivate "$ENV_NAME"
+echo "Script completed."

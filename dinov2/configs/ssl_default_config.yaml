@@ -51,7 +51,7 @@ dino:
 ibot:
   loss_weight: 1.0 # 1.0 original
   mask_sample_probability: 0.5
-  mask_ratio_min_max:
+  mask_ratio_min_max: 
   - 0.1
   - 0.5
   separate_head: false
@@ -65,7 +65,7 @@ train:
   output_dir: /home/na236/github_repos # change to something reasonable
   saveckp_freq: 20
   seed: 0
-  num_workers: 10  
+  num_workers: 10
   OFFICIAL_EPOCH_LENGTH: 1 # change depending on your dataset
   cache_dataset: true
   centering: "sinkhorn_knopp" # or "sinkhorn_knopp" or "centering"

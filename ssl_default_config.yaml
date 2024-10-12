@@ -61,11 +61,11 @@ ibot:
   head_hidden_dim: 2048
 train:
   batch_size_per_gpu: 32 # 256 for vit_s, 32 for vit_g
-  dataset_path: CustomImageDataset:split=TRAIN:root=/home/na236/DataBase#2/train/all #to change to your own dataset
-  output_dir: /home/na236 # change to something reasonable
+  dataset_path: CustomImageDataset:split=TRAIN:root=/home/cw9/sds_hd/sd21c015/DataBase_PDAC/tiles512.h5 #to change to your own dataset
+  output_dir: /home/cw9/sds_hd/sd21c015/DataBase_PDAC/PDACh5py # change to something reasonable
   saveckp_freq: 20
   seed: 0
-  num_workers: 10  
+  num_workers: 1 #10
   OFFICIAL_EPOCH_LENGTH: 1 # change depending on your dataset
   cache_dataset: true
   centering: "sinkhorn_knopp" # or "sinkhorn_knopp" or "centering"
@@ -91,7 +91,7 @@ teacher:
   teacher_temp: 0.07
   warmup_teacher_temp_epochs: 30 # original was 30
 optim:
-  epochs: 5000 #200 for bs 256
+  epochs: 602 #200 for bs 256
   weight_decay: 0.04 # 0.04 original
   weight_decay_end: 0.2
   base_lr: 2.0e-04  # learning rate for a batch size of 1024 is 2.0e-04

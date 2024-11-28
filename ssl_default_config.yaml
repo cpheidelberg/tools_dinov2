@@ -60,18 +60,18 @@ ibot:
   head_nlayers: 3
   head_hidden_dim: 2048
 train:
-  batch_size_per_gpu: 32 # 256 for vit_s, 32 for vit_g
+  batch_size_per_gpu: 8 # 256 for vit_s, 32 for vit_g
   dataset_path: CustomImageDataset:split=TRAIN:root=/home/cw9/sds_hd/sd21c015/DataBase_PDAC/tiles512.h5 #to change to your own dataset
   output_dir: /home/cw9/sds_hd/sd21c015/DataBase_PDAC/PDACh5py # change to something reasonable
   saveckp_freq: 20
   seed: 0
   num_workers: 1 #10
-  OFFICIAL_EPOCH_LENGTH: 1 # change depending on your dataset
+  OFFICIAL_EPOCH_LENGTH: 300000 # change depending on your dataset
   cache_dataset: true
   centering: "sinkhorn_knopp" # or "sinkhorn_knopp" or "centering"
 student:
-  arch: vit_small # e.g. vit_large or vit_small or vit_giant2
-  patch_size: 14 # important to use the checkpoints!
+  arch: vit_large # e.g. vit_large or vit_small or vit_giant2
+  patch_size: 16 # important to use the checkpoints!
   drop_path_rate: 0.4
   layerscale: 1.0e-05
   drop_path_uniform: false # original true
@@ -91,12 +91,12 @@ teacher:
   teacher_temp: 0.07
   warmup_teacher_temp_epochs: 30 # original was 30
 optim:
-  epochs: 602 #200 for bs 256
+  epochs: 10 #200 for bs 256
   weight_decay: 0.04 # 0.04 original
   weight_decay_end: 0.2
   base_lr: 2.0e-04  # learning rate for a batch size of 1024 is 2.0e-04
   lr: 0.  # will be set after applying scaling rule
-  warmup_epochs: 10 
+  warmup_epochs: 0 
   min_lr: 1.0e-06
   clip_grad: 3.0
   freeze_last_layer_epochs: 1 #original 1
@@ -114,7 +114,7 @@ crops:
   - 0.05
   - 0.32
   global_crops_size: 224 #original 224 -> 518 necessary for loading checkpoints, however, interpolation can be used to adapt the size
-  local_crops_size: 98 #original 96 -> has to be divideable by 14
+  local_crops_size: 96 #original 96 -> has to be divideable by 14
 evaluation:
   eval_period_iterations: 1000 # original 12500, what better -> use 1000 for finetuning
 # add a link to an /eval/training_iterations here, to continue with training to load the dino head weights as well, important: also set the start iterations!

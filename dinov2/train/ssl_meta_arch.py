@@ -79,13 +79,15 @@ def get_downloaded_dino_vit_s():
 
 # this function returns either a vit_s or vit_g, depending on what is commented out. the model is loaded with from torch.hub wih the weights and the positional encoding is reshaped.
 def get_downloaded_dino_interpolated():
-    model=torch.hub.load('facebookresearch/dinov2', 'dinov2_vits14')
+    model=torch.hub.load('facebookresearch/dinov2', 'dinov2_vitl14')
     #model=torch.hub.load('facebookresearch/dinov2', 'dinov2_vitg14')
     input_tensor = model.pos_embed
-    tensor_corr_shape = interpolate_pos_encoding(input_tensor, 16, 16)
-    pos_embed = nn.Parameter(torch.zeros(1, 257))
+    tensor_corr_shape = interpolate_pos_encoding(input_tensor, 14, 14)
+    pos_embed = nn.Parameter(torch.zeros(1, 197))
     pos_embed.data = tensor_corr_shape
     model.pos_embed = pos_embed
+    import timm
+    model.load_state_dict(torch.load("/home/na236/pytorch_model_uni.bin"), strict=True)
 
     return model
 
@@ -152,7 +154,7 @@ class SSLMetaArch(nn.Module):
         # This is commented out, because it was easier to create the model using the torch.hub, as this already returns the pretrained version with the correct architecture.
         #student_backbone, teacher_backbone, embed_dim = build_model_from_cfg(cfg)
         #embed_dim = 1536 # use for vit_g
-        embed_dim = 384 # use for vit_s
+        embed_dim = 1024 # use for vit_s
 
         # use for cut loading downloaded weights
         '''
@@ -161,8 +163,12 @@ class SSLMetaArch(nn.Module):
         '''
 
         # use for interpolated loading downloaded weights
-        student_backbone = get_downloaded_dino_interpolated()
-        teacher_backbone = get_downloaded_dino_interpolated()
+        student_backbone, teacher_backbone, embed_dim = build_model_from_cfg(cfg)
+
+        teacher_backbone.load_state_dict(torch.load("/home/na236/pytorch_model_uni.bin"), strict=False)
+        student_backbone.load_state_dict(torch.load("/home/na236/pytorch_model_uni.bin"), strict=False)
+       # student_backbone = get_downloaded_dino_interpolated()
+        #teacher_backbone = get_downloaded_dino_interpolated()
 
         # use for interpolated loading downloaded weights with registern
         '''

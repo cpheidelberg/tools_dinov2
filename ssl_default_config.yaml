@@ -66,7 +66,7 @@ train:
   saveckp_freq: 20
   seed: 0
   num_workers: 1 #10
-  OFFICIAL_EPOCH_LENGTH: 300000 # change depending on your dataset
+  OFFICIAL_EPOCH_LENGTH: 20000 # change depending on your dataset
   cache_dataset: true
   centering: "sinkhorn_knopp" # or "sinkhorn_knopp" or "centering"
 student:
@@ -91,12 +91,12 @@ teacher:
   teacher_temp: 0.07
   warmup_teacher_temp_epochs: 30 # original was 30
 optim:
-  epochs: 10 #200 for bs 256
+  epochs: 200 #200 for bs 256
   weight_decay: 0.04 # 0.04 original
   weight_decay_end: 0.2
   base_lr: 2.0e-04  # learning rate for a batch size of 1024 is 2.0e-04
   lr: 0.  # will be set after applying scaling rule
-  warmup_epochs: 0 
+  warmup_epochs: 2
   min_lr: 1.0e-06
   clip_grad: 3.0
   freeze_last_layer_epochs: 1 #original 1

@@ -156,7 +156,7 @@ def do_test(cfg, model, iteration):
         torch.save({"student_dino_head": state_dict_student_dino_head}, student_dino_head_ckp_path)
 
 
-def do_train(cfg, model, resume=False): # change resume to true?
+def do_train(cfg, model, resume=False, n = 0): # change resume to true?
     model.train()
     inputs_dtype = torch.half
     fp16_scaler = model.fp16_scaler  # for mixed precision training
@@ -273,9 +273,12 @@ def do_train(cfg, model, resume=False): # change resume to true?
 
         # compute losses
 
-        optimizer.zero_grad(set_to_none=True)
         loss_dict = model.forward_backward(data, teacher_temp=teacher_temp)
+        n += 1
+        if n < cfg.train.gradient_accumulation_factor:
+            continue
 
+        n = 0       
         # clip gradients
 
         if fp16_scaler is not None:
@@ -283,14 +286,16 @@ def do_train(cfg, model, resume=False): # change resume to true?
                 fp16_scaler.unscale_(optimizer)
                 for v in model.student.values():
                     v.clip_grad_norm_(cfg.optim.clip_grad)
-            fp16_scaler.step(optimizer)
-            fp16_scaler.update()
-        else:
-            if cfg.optim.clip_grad:
-                for v in model.student.values():
-                    v.clip_grad_norm_(cfg.optim.clip_grad)
-            optimizer.step()
+     
+        fp16_scaler.step(optimizer)
+        fp16_scaler.update()
+   #     else:
+    #        if cfg.optim.clip_grad:
+    #            for v in model.student.values():
+    #                v.clip_grad_norm_(cfg.optim.clip_grad)
+     #       optimizer.step()
 
+        optimizer.zero_grad(set_to_none=True)
         # perform teacher EMA update
 
         model.update_teacher(mom)

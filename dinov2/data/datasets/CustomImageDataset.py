@@ -8,11 +8,13 @@ from torchvision import transforms
 #from sklearn.model_selection import train_test_split
 from .decoders import ImageDataDecoder
 import random
-import pyvips
+#import pyvips
 import numpy as np
 #import numpy as np
 from PIL import Image
 import h5py
+import logging
+
 
 # these functions were just created to check how the augmented images/crops look like
 def save_image(tensor, name1, name2):
@@ -110,9 +112,9 @@ class CustomImageDataset(Dataset):
                 else:
                     #print(img_path)
 
-                    vips_image = pyvips.Image.new_from_file(img_path)
-                    numpy_image = np.array(vips_image)
-                    image_pil = Image.fromarray(numpy_image)#.tobytes()
+ #                   vips_image = pyvips.Image.new_from_file(img_path)
+  #                  numpy_image = np.array(vips_image)
+   #                 image_pil = Image.fromarray(numpy_image)#.tobytes()
                     if verbose:
                         print(f"does work until here; and uses vips input; index is {idx}")
 
@@ -122,7 +124,6 @@ class CustomImageDataset(Dataset):
                     dst = h5f['tile']
                     numpy_image = np.array(dst[idx]).astype("uint8")
                     image_pil = Image.fromarray(numpy_image)
-
                 if verbose:
                     print(f"it worked until here; and used h5 input; input is {idx}")
 
@@ -133,14 +134,15 @@ class CustomImageDataset(Dataset):
             image = self.__getitem__(random_index)
             return image, None
         if self.transform:
-            image_pil = self.transform(image_pil)
-
+            image_pil = self.transform(image_pil)  
+        
         return image_pil, None
 
     def get_test_item(self, idx):
         img_path = os.path.join(self.img_dir, self.test_data.iloc[idx, 0])
         image = read_image(img_path)
         image_pil = transforms.ToPILImage()(image)
+
         if self.transform:
             image_pil = self.transform(image_pil)
         return image_pil

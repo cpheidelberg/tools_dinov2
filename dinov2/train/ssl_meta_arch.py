@@ -165,8 +165,8 @@ class SSLMetaArch(nn.Module):
         # use for interpolated loading downloaded weights
         student_backbone, teacher_backbone, embed_dim = build_model_from_cfg(cfg)
 
-        teacher_backbone.load_state_dict(torch.load("/home/na236/pytorch_model_uni.bin"), strict=False)
-        student_backbone.load_state_dict(torch.load("/home/na236/pytorch_model_uni.bin"), strict=False)
+        teacher_backbone.load_state_dict(torch.load("/home/hd/hd_hd/hd_na236/pytorch_model_uni.bin"), strict=False)
+        student_backbone.load_state_dict(torch.load("/home/hd/hd_hd/hd_na236/pytorch_model_uni.bin"), strict=False)
        # student_backbone = get_downloaded_dino_interpolated()
         #teacher_backbone = get_downloaded_dino_interpolated()
 
@@ -509,7 +509,7 @@ class SSLMetaArch(nn.Module):
             # accumulate loss
             loss_accumulator += self.ibot_loss_weight * ibot_patch_loss
 
-        self.backprop_loss(loss_accumulator)
+        self.backprop_loss(loss_accumulator/cfg.train.gradient_accumulation_factor)
 
         self.fsdp_synchronize_streams()
 

@@ -121,5 +121,5 @@ class DataAugmentationDINO(object):
         ]
         output["local_crops"] = local_crops
         output["offsets"] = ()
-
+        logger.info(f"This is used")
         return output

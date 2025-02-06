@@ -61,11 +61,13 @@ ibot:
   head_hidden_dim: 2048
 train:
   batch_size_per_gpu: 32 # 256 for vit_s, 32 for vit_g
-  gradient_accumulation_factor: 16 # Effective Batch_size = batch_size_per_gpu * gradient_accumulation_factor
+  gradient_accumulation_factor: 32 # Effective Batch_size = batch_size_per_gpu * gradient_accumulation_factor
+  dataset_path: CustomImageDataset:split=TRAIN:root=/home/cw9/sds_hd/sd21c015/DataBase_PDAC/tiles512.h5 #to change to your own dataset
+  output_dir: /home/cw9/sds_hd/sd21c015/DataBase_PDAC/PDACh5py # change to something reasonable
   saveckp_freq: 20
   seed: 0
   num_workers: 12 #10
-  OFFICIAL_EPOCH_LENGTH: 193 # = dataset_length / Effective Batch_size
+  OFFICIAL_EPOCH_LENGTH: 12000 # change depending on your dataset2,469,922
   cache_dataset: true
   centering: "sinkhorn_knopp" # or "sinkhorn_knopp" or "centering"
 student:
@@ -88,7 +90,7 @@ teacher:
   final_momentum_teacher: 1
   warmup_teacher_temp: 0.04
   teacher_temp: 0.07
-  warmup_teacher_temp_epochs: 30 # original was 30
+  warmup_teacher_temp_epochs: 10 # original was 30
 optim:
   epochs: 20 #200 for bs 256
   weight_decay: 0.04 # 0.04 original
@@ -96,9 +98,9 @@ optim:
   base_lr: 2.0e-04  # learning rate for a batch size of 1024 is 2.0e-04
   lr: 0.  # will be set after applying scaling rule
   warmup_epochs: 0
-  min_lr: 3.0e-06
+  min_lr: 1.0e-05
   clip_grad: 3.0
-  freeze_last_layer_epochs: 100 #original 1
+  freeze_last_layer_epochs: 1 #original 1
   scaling_rule: sqrt_wrt_1024
   patch_embed_lr_mult: 0.2
   layerwise_decay: 0.9

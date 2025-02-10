@@ -66,6 +66,13 @@ def get_args_parser(add_help: bool = True):
         help="Output directory to save logs and checkpoints",
     )
 
+    parser.add_argument(
+        "--pretrained-weights",
+        default="",
+        type=str,
+        help="Pretrained weights from a foundation model",
+    )    
+
     return parser
 
 
@@ -78,9 +85,11 @@ def build_schedulers(cfg):
     lr = dict(
         base_value=cfg.optim["lr"],
         final_value=cfg.optim["min_lr"],
-        total_iters=cfg.optim["epochs"] * OFFICIAL_EPOCH_LENGTH,
-        warmup_iters=cfg.optim["warmup_epochs"] * OFFICIAL_EPOCH_LENGTH,
-        start_warmup_value=0,
+       # total_iters=cfg.optim["epochs"] * OFFICIAL_EPOCH_LENGTH,
+        total_iters = 0,
+      #  warmup_iters=cfg.optim["warmup_epochs"] * OFFICIAL_EPOCH_LENGTH,
+        warmup_iters = 0,
+        start_warmup_value = 0,
     )
     wd = dict(
         base_value=cfg.optim["weight_decay"],

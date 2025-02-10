@@ -24,7 +24,7 @@ CONFIG_FILE="ssl_default_config.yaml"  # Path to the configuration file
 #INPUT_DIR=/home/hd/hd_hd/hd_na236/all_png    /mnt/sds-hd/sd19g003/Glomeruli_dataset/WSI_patches/WSI_patches_test_5.h5
 INPUT_DIR="/mnt/sds-hd/sd19g003/Glomeruli_dataset/WSI_patches_curatedpng/glommeruli_0.999" 
 OUTPUT_DIR="/home/hd/hd_hd/hd_na236/checkpoints_folder/checkpoints_run_33"
-
+PRE_WEIGHTS="/home/na236/pytorch_model_uni.bin"
 
 # Clone the repository if it doesn't exist
 if [ -d "$REPO_DIR" ]; then
@@ -57,7 +57,7 @@ cp "/home/hd/hd_hd/hd_na236/run.sh" "$OUTPUT_DIR"
 
 # Execute the Python training script
 echo "Running the training script with configuration file '$CONFIG_FILE'..."
-python3 dinov2/train/train.py --config-file "$CONFIG_FILE" --input-dir "$INPUT_DIR" --output-dir "$OUTPUT_DIR"
+python3 dinov2/train/train.py --config-file "$CONFIG_FILE" --input-dir "$INPUT_DIR" --output-dir "$OUTPUT_DIR" --pretrained-weights "$PRE_WEIGHTS"
 
 echo "Script completed."
 

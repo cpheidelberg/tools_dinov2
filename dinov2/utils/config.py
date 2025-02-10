@@ -40,10 +40,11 @@ def write_config(cfg, output_dir, name="config.yaml"):
 def get_cfg_from_args(args):
     args.output_dir = os.path.abspath(args.output_dir)
     args.opts += [f"train.output_dir={args.output_dir}"]
+    args.pretrained_weights = os.path.abspath(args.pretrained_weights)
+    args.opts += [f"train.pretrained_weights={args.pretrained_weights}"]
     default_cfg = OmegaConf.create(dinov2_default_config)
     cfg = OmegaConf.load(args.config_file)
     cfg = OmegaConf.merge(default_cfg, cfg, OmegaConf.from_cli(args.opts))
-    print(args.input_dir)
     if args.input_dir:
         cfg['train']['dataset_path'] = f'CustomImageDataset:split=TRAIN:root={args.input_dir}'
 

@@ -165,8 +165,8 @@ class SSLMetaArch(nn.Module):
         # use for interpolated loading downloaded weights
         student_backbone, teacher_backbone, embed_dim = build_model_from_cfg(cfg)
 
-        teacher_backbone.load_state_dict(torch.load("/home/hd/hd_hd/hd_na236/pytorch_model_uni.bin"), strict=False)
-        student_backbone.load_state_dict(torch.load("/home/hd/hd_hd/hd_na236/pytorch_model_uni.bin"), strict=False)
+        teacher_backbone.load_state_dict(torch.load(cfg.train.pretrained_weights), strict=False)
+        student_backbone.load_state_dict(torch.load(cfg.train.pretrained_weights), strict=False)
        # student_backbone = get_downloaded_dino_interpolated()
         #teacher_backbone = get_downloaded_dino_interpolated()
 

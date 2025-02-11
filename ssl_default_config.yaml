@@ -63,7 +63,7 @@ train:
   pretrained_weights: 
   batch_size_per_gpu: 8 # 256 for vit_s, 32 for vit_g
   gradient_accumulation_factor: 8 # Effective Batch_size = batch_size_per_gpu * gradient_accumulation_factor
-  OFFICIAL_EPOCH_LENGTH: 200000 # change depending on your dataset2,469,922
+  OFFICIAL_EPOCH_LENGTH: 6250 # change depending on your dataset2,469,922
   dataset_path:
   output_dir: 
   saveckp_freq: 20
@@ -99,9 +99,9 @@ optim:
   base_lr: 2.0e-03  # learning rate for a batch size of 1024 is 2.0e-04
   lr: 0.  # will be set after applying scaling rule
   warmup_epochs: 0
-  min_lr: 2.0e-04
+  min_lr: 3.0e-05
   clip_grad: 3.0
-  freeze_last_layer_epochs: 1 #original 1
+  freeze_last_layer_epochs: 100 #original 1
   scaling_rule: sqrt_wrt_1024
   patch_embed_lr_mult: 0.2
   layerwise_decay: 0.9

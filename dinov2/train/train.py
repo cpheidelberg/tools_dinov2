@@ -9,10 +9,13 @@
 import sys
 import os
 
+import numpy as np
+from sklearn.metrics import confusion_matrix
 # Add the root directory of the project to sys.path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.insert(0, project_root)
 
+from torch.utils.data import DataLoader
 import argparse
 import logging
 import math
@@ -20,6 +23,8 @@ import os
 from functools import partial
 import wandb
 #os.environ["WANDB_MODE"]="offline" #use this so set wandb to offline mode
+import FSL_utils.FSL_dataloader as dl
+import FSL_utils.FSL_network as fn
 
 from fvcore.common.checkpoint import PeriodicCheckpointer
 import torch
@@ -32,7 +37,7 @@ from dinov2.utils.config import setup
 from dinov2.utils.utils import CosineScheduler
 from dinov2.train.ssl_meta_arch import SSLMetaArch
 from tqdm import tqdm
-
+from sklearn.metrics import cohen_kappa_score
 
 torch.backends.cuda.matmul.allow_tf32 = True  # PyTorch 1.12 sets this to False by default
 logger = logging.getLogger("dinov2")
@@ -74,6 +79,7 @@ def get_args_parser(add_help: bool = True):
     )    
 
     return parser
+
 
 
 def build_optimizer(cfg, params_groups):
@@ -128,6 +134,77 @@ def build_schedulers(cfg):
         teacher_temp_schedule,
         last_layer_lr_schedule,
     )
+
+def cohen_kappa_with_plot(predicted, true, path = None):
+    """
+    Calculate Cohen's Kappa for two arrays and plot the confusion matrix.
+    
+    Parameters:
+    predicted (array-like): Array of predicted labels
+    true (array-like): Array of true labels
+    
+    Returns:
+    float: Cohen's Kappa score
+    """
+    # Ensure inputs are numpy arrays
+    predicted = np.array(predicted)
+    true = np.array(true)
+    
+    # Compute the confusion matrix
+    cm = confusion_matrix(true, predicted)
+
+  #  print(cm)
+    # Number of observations
+    n = np.sum(cm)
+    
+    # Observed agreement
+    P_o = np.trace(cm) / n
+    
+    # Expected agreement
+    sum_rows = np.sum(cm, axis=1)
+    sum_cols = np.sum(cm, axis=0)
+    P_e = np.sum(sum_rows * sum_cols) / (n * n)
+    
+    # Cohen's Kappa
+    kappa = (P_o - P_e) / (1 - P_e)
+
+    return kappa
+
+def FSL_evaluate(backbone, device = 'cuda'):
+
+
+    from sklearn.model_selection import train_test_split
+    paths  =  ['/home/na236/DataBase#2/train/01',
+        '/home/na236/DataBase#2/train/02',
+        '/home/na236/DataBase#2/train/03',
+        '/home/na236/DataBase#2/train/04',
+        '/home/na236/DataBase#2/train/05',        
+        '/home/na236/DataBase#2/train/06',
+        '/home/na236/DataBase#2/train/07',
+        '/home/na236/DataBase#2/train/08',  
+        '/home/na236/DataBase#2/train/09',    
+        ]
+
+    N_WAY = 9  # Number of classes in a task
+    N_SHOT = 50 # Number of images per class in the support set to create prototypes
+    N_QUERY = 50 # Number of images per class in the query set
+
+    query_images, query_labels = dl.load_images_from_directories(paths,  target_size=(224,224), file_format = 'tif', min_images = N_QUERY + N_SHOT)
+    query_images,support_images, query_labels, support_labels= train_test_split(query_images, query_labels, test_size=N_SHOT / (N_QUERY + N_SHOT),stratify=query_labels)
+
+    query_dataset = dl.Dataset_torch(query_images, query_labels)
+    train_loader = DataLoader(query_dataset, batch_size = 100, num_workers=6, pin_memory=True,)
+    support_dataset = dl.Dataset_torch(support_images, support_labels)
+    support_loader = DataLoader(support_dataset, batch_size = 100, num_workers=6, pin_memory=True,)
+
+    # Load the model and create prototypes
+    model_classifier = fn.PrototypicalNetworks(backbone)  
+    model_classifier.eval()
+    model_classifier.calculate_prototypes(support_loader, device = device)
+
+    predictions = model_classifier.make_prediction(train_loader, device)
+
+    return cohen_kappa_with_plot(predictions[:,-2], query_labels)
 
 
 def apply_optim_scheduler(optimizer, lr, wd, last_layer_lr):
@@ -311,6 +388,8 @@ def do_train(cfg, model, resume=False, n = 0): # change resume to true?
 
         # logging
 
+        kappa = FSL_evaluate(model.teacher.backbone, device = 'cuda')
+
         if distributed.get_global_size() > 1:
             for v in loss_dict.values():
                 torch.distributed.all_reduce(v)
@@ -323,7 +402,7 @@ def do_train(cfg, model, resume=False, n = 0): # change resume to true?
         losses_reduced = sum(loss for key, loss in loss_dict_reduced.items() if key != 'koleo_loss')
 
         # wandb logging
-        wandb.log({"lr": lr, "loss": losses_reduced, "wd": wd, "mom": mom, "last_layer_lr": last_layer_lr, "current_batch_size": current_batch_size
+        wandb.log({"lr": lr,"Kappa": kappa, "loss": losses_reduced, "wd": wd, "mom": mom, "last_layer_lr": last_layer_lr, "current_batch_size": current_batch_size
         , "koleo_loss": loss_dict_reduced['koleo_loss'], "dino_local_crops_loss": loss_dict_reduced['dino_local_crops_loss']
         , "dino_global_crops_loss": loss_dict_reduced['dino_global_crops_loss'], "ibot_loss": loss_dict_reduced['ibot_loss']})
         metric_logger.update(lr=lr)
